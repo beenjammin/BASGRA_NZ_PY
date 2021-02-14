@@ -5,6 +5,9 @@
 import pandas as pd
 import os
 import numpy as np
+import sys
+sys.path.append("..")
+
 from supporting_functions.conversions import convert_RH_vpa
 from supporting_functions.woodward_2020_params import get_woodward_mean_full_params
 
@@ -117,6 +120,7 @@ def _compair_pet():
 
     from supporting_functions.plotting import plot_multiple_results
     plot_multiple_results({'pet': pet_out, 'peyman': peyman_out})
+    return params, matrix_weather, days_harvest, doy_irr
 
 
 def establish_org_input(site='scott'):
@@ -156,7 +160,7 @@ def establish_org_input(site='scott'):
     days_harvest = pd.read_csv(os.path.join(test_dir, harvest_nm),
                                delim_whitespace=True,
                                names=['year', 'doy', 'percent_harvest']
-                               ).astype(int)  # floor matches what simon did.
+                               ).astype(int)  # floor matches what simon did.  Why???
 
     days_harvest.loc[:, 'frac_harv'] = days_harvest.loc[:, 'percent_harvest'] / 100
     days_harvest.loc[:, 'harv_trig'] = 0
@@ -166,7 +170,6 @@ def establish_org_input(site='scott'):
     days_harvest.loc[:, 'reseed_basal'] = 1
 
     days_harvest.drop(columns=['percent_harvest'], inplace=True)
-
     ndays = matrix_weather.shape[0]
     doy_irr = [0]
     return params, matrix_weather, days_harvest, doy_irr
@@ -298,5 +301,10 @@ def base_auto_harvest_data(matrix_weather):
 
 
 if __name__ == '__main__':
-    params, matrix_weather, days_harvest, doy_irr = establish_peyman_input(True)
-    matrix_weather.to_csv(r"C:\Users\Matt Hanson\Downloads\lincoln_weather.csv")
+    #params, matrix_weather, days_harvest2, doy_irr = establish_org_input('lincoln')
+    # params, matrix_weather, days_harvest, doy_irr = establish_peyman_input(True)
+    # matrix_weather.to_csv(r"C:\Users\BTHRO\Downloads\lincoln_weather.csv")
+    # days_harvest.to_csv(r"C:\Users\BTHRO\Downloads\days_harvest.csv")
+    params1, matrix_weather1, days_harvest1, doy_irr1 = _compair_pet()
+
+    # print(params)

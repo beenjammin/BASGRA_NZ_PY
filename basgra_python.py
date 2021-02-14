@@ -21,6 +21,9 @@ from warnings import warn
 # define the dll library path
 _libpath_pet = os.path.join(os.path.dirname(__file__), 'fortran_BASGRA_NZ/BASGRA_pet.DLL')
 _libpath_peyman = os.path.join(os.path.dirname(__file__), 'fortran_BASGRA_NZ/BASGRA_peyman.DLL')
+
+#_libpath_pet = r"C:\Users\BTHRO\OneDrive\Documents\GitHub\BASGRA_NZ_PY\fortran_BASGRA_NZ\BASGRA_pet.DLL"
+#_libpath_peyman = r"C:\Users\BTHRO\OneDrive\Documents\GitHub\BASGRA_NZ_PY\fortran_BASGRA_NZ\BASGRA_peyman.DLL"
 _bat_path = os.path.join(os.path.dirname(__file__), 'fortran_BASGRA_NZ\\compile_BASGRA_gfortran.bat')
 # this is the maximum number of weather days,
 # it is hard coded into fortran_BASGRA_NZ/environment.f95 line 9
@@ -140,7 +143,7 @@ def run_basgra_nz(params, matrix_weather, days_harvest, doy_irr, verbose=False,
     nout_p = ct.pointer(ct.c_int(nout))
     verb_p = ct.pointer(ct.c_bool(verbose))
 
-    # load DLL
+    # load DLL 
     for_basgra = ct.CDLL(dll_path)
 
     # run BASGRA
