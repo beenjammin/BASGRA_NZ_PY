@@ -57,17 +57,17 @@ from supporting_functions.plotting import plot_multiple_results
 from basgra_python import run_basgra_nz
 
 # specify dates (yyyy, mm, dd)
-irrig_start = datetime.datetime(2011, 9, 1)
-irrig_end = datetime.datetime(2017, 5, 31)
+irrig_start = datetime.datetime(1972, 9, 1)
+irrig_end = datetime.datetime(2020, 5, 31)
 
 #--->	1.0:
 #		reads parameters from the Lincoln farm
 params = get_woodward_mean_full_params('lincoln')
-
+#PAW is 40 mm and 140 mm
 
 #--->	2.0:
 #		reads weather parameters from Lincoln
-matrix_weather = pd.read_csv(CWD/'check_basgra_python'/'test_data'/'weather_Lincoln.txt',
+matrix_weather = pd.read_csv(CWD/'check_basgra_python'/'test_data'/'weather_Dunluce.txt',
                              delim_whitespace=True, index_col=0,
                              header=0,
                              names=['year',
@@ -79,15 +79,15 @@ matrix_weather = pd.read_csv(CWD/'check_basgra_python'/'test_data'/'weather_Linc
                                     'pet'])
 
 #add irrigation parameters to the dataframe
-matrix_weather.loc[:, 'max_irr']  = 4.25
-matrix_weather.loc[:, 'irr_trig'] = 0.50
+matrix_weather.loc[:, 'max_irr']  = 5.5
+matrix_weather.loc[:, 'irr_trig'] = 0.70
 matrix_weather.loc[:, 'irr_targ'] = 1
 
 # set start date as doy 121 2011
-idx = (matrix_weather.year > 2011) | ((matrix_weather.year == 2011) & (matrix_weather.doy >= 121))
+idx = (matrix_weather.year > 1972) | ((matrix_weather.year == 1972) & (matrix_weather.doy >= 121))
 matrix_weather = matrix_weather.loc[idx].reset_index(drop=True)
 # set end date as doy 120, 2017
-idx = (matrix_weather.year < 2017) | ((matrix_weather.year == 2017) & (matrix_weather.doy <= 120))
+idx = (matrix_weather.year < 2020) | ((matrix_weather.year == 2020) & (matrix_weather.doy <= 120))
 matrix_weather = matrix_weather.loc[idx].reset_index(drop=True)
 # # set start date and trim df
 # idx = (matrix_weather.year > irrig_start.year) | ((matrix_weather.year == irrig_start.year) & (matrix_weather.doy >= irrig_end.timetuple().tm_yday))
@@ -113,23 +113,41 @@ days_harvest.loc[:, 'reseed_trig'] = -1
 days_harvest.loc[:, 'reseed_basal'] = 1
 days_harvest.drop(columns=['percent_harvest'], inplace=True)
 
+#--->	3.0:
+#		reads harvest parameters from Lincoln
+days_harvest_no_irrig = pd.read_csv(CWD/'check_basgra_python'/'test_data'/'harvest_no_irrig_Dunluce.txt',
+                           delim_whitespace=True,
+                           names=['year', 'doy', 'percent_harvest']
+                           ).astype(int)  # floor matches what simon did.  Why???
+
+
+days_harvest_no_irrig.loc[:, 'frac_harv'] = days_harvest_no_irrig.loc[:, 'percent_harvest'] / 100
+days_harvest_no_irrig.loc[:, 'harv_trig'] = 0
+days_harvest_no_irrig.loc[:, 'harv_targ'] = 0
+days_harvest_no_irrig.loc[:, 'weed_dm_frac'] = 0
+days_harvest_no_irrig.loc[:, 'reseed_trig'] = -1
+days_harvest_no_irrig.loc[:, 'reseed_basal'] = 1
+days_harvest_no_irrig.drop(columns=['percent_harvest'], inplace=True)
+
 #--->	4.0:
 #		days of irrigation
 doy_no_irr = [0]
 doy_irr = [i for i in range(1,120)] + [i for i in range(280,366)]
 #doy_irr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
 
-
+params['opt_harvfrin'] = 1.0
 #--->	5.0:
 #		run BASGRA
-outputs_no_irrig = run_basgra_nz(params, matrix_weather, days_harvest, doy_no_irr, verbose=False, dll_path='default',
+outputs_no_irrig = run_basgra_nz(params, matrix_weather, days_harvest_no_irrig, doy_no_irr, verbose=False, dll_path='default',
                         supply_pet=True)
+outputs_no_irrig.to_csv(CWD/'no_irrigation.csv')
 
 params_irrig = copy.deepcopy(params)
 params_irrig['irr_frm_paw'] = 1.0
 params_irrig['IRRIGF'] = .90  
 outputs_irrig = run_basgra_nz(params_irrig, matrix_weather, days_harvest, doy_irr, verbose=False, dll_path='default',
                         supply_pet=True)
+outputs_irrig.to_csv(CWD/'sub_opt_irrigation.csv')
 
 params_irrig_optH = copy.deepcopy(params_irrig)
 params_irrig_optH['opt_harvfrin'] = 1.0
@@ -148,7 +166,9 @@ params_irrig_optH['opt_harvfrin'] = 1.0
  
 outputs_irrig_optH = run_basgra_nz(params_irrig_optH, matrix_weather, days_harvest, doy_irr, verbose=False, dll_path='default',
                         supply_pet=True)
-plot_multiple_results({'no_irrig': outputs_no_irrig, 'irrig':outputs_irrig,'irrig_optH':outputs_irrig_optH})
+outputs_irrig_optH.to_csv(CWD/'irrigation.csv')
+# plot_multiple_results({'no_irrig': outputs_no_irrig, 'irrig':outputs_irrig,'irrig_optH':outputs_irrig_optH})
+plot_multiple_results({'no_irrig': outputs_no_irrig})
 
 
 
