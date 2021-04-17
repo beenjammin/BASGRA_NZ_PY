@@ -179,9 +179,12 @@ def test_irrigation_fraction(update_data=False):
 
     params['IRRIGF'] = .60  # irrigation of 60% of what is needed to get to field capacity
     doy_irr = list(range(305, 367)) + list(range(1, 91))
+    doy_irr_2 = [0]
 
     days_harvest = _clean_harvest(days_harvest, matrix_weather)
     out = run_basgra_nz(params, matrix_weather, days_harvest, doy_irr, verbose=verbose)
+    out_2 = run_basgra_nz(params, matrix_weather, days_harvest, doy_irr_2, verbose=verbose)
+    plot_multiple_results({'no_irrig': out_2,'irrig_optH':out})
 
     data_path = os.path.join(test_dir, 'test_irrigation_fraction_output.csv')
     if update_data:
@@ -463,7 +466,7 @@ def test_auto_harv_trig(update_data=False):
     data_path = os.path.join(test_dir, '{}_data.csv'.format(test_nm))
     if update_data:
         out.to_csv(data_path)
-
+    plot_multiple_results({'no_irrig': out,'irrig_optH':out})
     correct_out = pd.read_csv(data_path, index_col=0)
     _output_checks(out, correct_out)
 
@@ -561,6 +564,7 @@ def test_weed_fixed_harv_auto(update_data=False):
 
     days_harvest.drop(columns=['date'], inplace=True)
     out = run_basgra_nz(params, matrix_weather, days_harvest, doy_irr, verbose=verbose, auto_harvest=True)
+    plot_multiple_results({'no_irrig': out,'irrig_optH':out})
 
     data_path = os.path.join(test_dir, '{}_data.csv'.format(test_nm))
     if update_data:
@@ -584,7 +588,7 @@ def test_reseed(update_data=False):
 
     params['IRRIGF'] = .90  # irrigation to 90% of field capacity
     # these values are set to make observable changes in the results and are not reasonable values.
-    params['reseed_harv_delay'] = 120
+    params['reseed_harv_delay'] = 10
     params['reseed_LAI'] = 3
     params['reseed_TILG2'] = 10
     params['reseed_TILG1'] = 40
@@ -611,7 +615,9 @@ def test_reseed(update_data=False):
     days_harvest.loc[:,'year'] = days_harvest.loc[:,'year'].astype(int)
     days_harvest.loc[:,'doy'] = days_harvest.loc[:,'doy'].astype(int)
     days_harvest = _clean_harvest(days_harvest, matrix_weather)
+    doy_irr_2 =[0]
     out = run_basgra_nz(params, matrix_weather, days_harvest, doy_irr, verbose=verbose)
+    out_2 = run_basgra_nz(params, matrix_weather, days_harvest, doy_irr_2, verbose=verbose)
     to_plot = [  # used to check the test
         'RESEEDED',
         'PHEN',
@@ -628,6 +634,7 @@ def test_reseed(update_data=False):
         'CSTUB',
     ]
     data_path = os.path.join(test_dir, 'test_reseed.csv')
+    plot_multiple_results({'no_irrig': out_2,'irrig_optH':out})
     if update_data:
         out.to_csv(data_path)
 
@@ -643,24 +650,24 @@ if __name__ == '__main__':
     test_pet_calculation()
 
     # irrigation tests
-    test_irrigation_trigger()
-    test_irrigation_fraction()
-    test_water_short()
-    test_short_season()
-    test_variable_irr_trig_targ()
-    test_irr_paw()
+    # test_irrigation_trigger()
+    # test_irrigation_fraction()
+    # test_water_short()
+    # test_short_season()
+    # test_variable_irr_trig_targ()
+    # test_irr_paw()
 
-    # harvest checks
-    test_harv_trig_man()
-    test_fixed_harvest_man()
-    test_weed_fraction_auto()
+    # # harvest checks
+    # test_harv_trig_man()
+    # test_fixed_harvest_man()
+    # test_weed_fraction_auto()
     test_auto_harv_trig()
-    test_weed_fixed_harv_auto()
-    test_auto_harv_fixed()
-    test_weed_fraction_man()
+    # test_weed_fixed_harv_auto()
+    # test_auto_harv_fixed()
+    # test_weed_fraction_man()
 
     # test reseed
-    test_reseed()
+    #test_reseed()
 
     # input data for manual harvest check
     test_trans_manual_harv()

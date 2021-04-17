@@ -84,8 +84,8 @@ matrix_weather.loc[:, 'irr_trig'] = 0.70
 matrix_weather.loc[:, 'irr_targ'] = 1
 
 # set start date as doy 121 2011
-idx = (matrix_weather.year > 1972) | ((matrix_weather.year == 1972) & (matrix_weather.doy >= 121))
-matrix_weather = matrix_weather.loc[idx].reset_index(drop=True)
+idxa = (matrix_weather.year > 1972) | ((matrix_weather.year == 1972) & (matrix_weather.doy >= 121))
+matrix_weather = matrix_weather.loc[idxa].reset_index(drop=True)
 # set end date as doy 120, 2017
 idx = (matrix_weather.year < 2020) | ((matrix_weather.year == 2020) & (matrix_weather.doy <= 120))
 matrix_weather = matrix_weather.loc[idx].reset_index(drop=True)
@@ -112,6 +112,7 @@ days_harvest.loc[:, 'weed_dm_frac'] = 0
 days_harvest.loc[:, 'reseed_trig'] = -1
 days_harvest.loc[:, 'reseed_basal'] = 1
 days_harvest.drop(columns=['percent_harvest'], inplace=True)
+# days_harvest = days_harvest.loc[idxa].reset_index(drop=True)
 
 #--->	3.0:
 #		reads harvest parameters from Lincoln
@@ -128,11 +129,12 @@ days_harvest_no_irrig.loc[:, 'weed_dm_frac'] = 0
 days_harvest_no_irrig.loc[:, 'reseed_trig'] = -1
 days_harvest_no_irrig.loc[:, 'reseed_basal'] = 1
 days_harvest_no_irrig.drop(columns=['percent_harvest'], inplace=True)
+# days_harvest_no_irrig = days_harvest_no_irrig.loc[idxa].reset_index(drop=True)
 
 #--->	4.0:
 #		days of irrigation
 doy_no_irr = [0]
-doy_irr = [i for i in range(1,120)] + [i for i in range(280,366)]
+doy_irr = [i for i in range(1,120)] + [i for i in range(210,366)]
 #doy_irr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
 
 params['opt_harvfrin'] = 1.0
@@ -168,7 +170,7 @@ outputs_irrig_optH = run_basgra_nz(params_irrig_optH, matrix_weather, days_harve
                         supply_pet=True)
 outputs_irrig_optH.to_csv(CWD/'irrigation.csv')
 # plot_multiple_results({'no_irrig': outputs_no_irrig, 'irrig':outputs_irrig,'irrig_optH':outputs_irrig_optH})
-plot_multiple_results({'no_irrig': outputs_no_irrig})
+plot_multiple_results({'no_irrig': outputs_no_irrig,'irrig_optH':outputs_irrig_optH})
 
 
 
